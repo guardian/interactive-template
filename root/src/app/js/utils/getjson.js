@@ -1,3 +1,8 @@
+/**
+ * Get JSON data via XHR
+ * @param {string} url - URL to JSON.
+ * @param {function} callback - Function to be called with response data.
+ */
 function getJSON(url, callback) {
     var xhr = new XMLHttpRequest();
     if ('withCredentials' in xhr) {
@@ -34,6 +39,5 @@ function getJSON(url, callback) {
         xhr.send();
     }, 0);
 }
-
 
 module.exports = getJSON;

@@ -12,7 +12,6 @@
 @import 'modules/_mq';
 @import 'modules/_side-margins';
 
-
 // Setup page
 body {
     margin: 0;
@@ -24,10 +23,8 @@ body {
     margin: 0;
 }
 
-// 
-.guvisual {
-    background: transparent url('../app/imgs/guardian-logo.png') top left no-repeat;
-    padding-top: 100px;
+// Note: Access images using '../app/imgs/' path
+.gv-wrapper {
     margin: 0 auto;
     
     // Breakpoints
@@ -50,12 +47,19 @@ body {
     }
 }
 
-// Access colours
-.guvisual a {
-    color: map-get($pasteup-palette, 'guardian-brand');
+.gv-header {
+    padding: 10px $gs-gutter;
+    margin: 0;
 }
 
-.lastguardian {
-    width: 100%;
-    max-width: 400px;
+.gv-guardian-logo {
+    float: right;
+    width: 80px;
+}
+
+.gv-table {
+    margin: 10px auto;
+    max-width: 500px;
+    font-family: 'Guardian Text Sans Web', sans-serif;
+    font-size: 0.9rem;
 }

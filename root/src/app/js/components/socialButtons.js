@@ -1,12 +1,12 @@
-var Ractive = require('ractive/ractive.runtime');
+var Ractive = require('ractive');
 
-module.exports = function (el, url, shareText) {
-	return new Ractive( {
-	    el: el,
-	    template: require('./socialButtons.ract'),
-	    data: {
-			url: url,
-	        shareText: shareText
-	    }
-	});
+var data = {
+	url: 'http://gu.com/example',
+	sharetext: 'Social share text'
 };
+
+module.exports = Ractive.extend({
+	isolated: false,
+	data: data,
+	template: require('./socialButtons.html')
+});

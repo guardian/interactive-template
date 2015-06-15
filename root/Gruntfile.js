@@ -36,7 +36,7 @@ module.exports = function(grunt) {
             fullPaths: false
           },
           watch: true,
-          transform: ['partialify', ['ractivate', {extensions: [ '.ract' ]} ] ]
+          transform: ['partialify']
         }
       }
     },
@@ -167,7 +167,7 @@ module.exports = function(grunt) {
 
   });
 
-  require('jit-grunt')(grunt);
+  require('jit-grunt')(grunt, { s3: 'grunt-aws', replace: 'grunt-text-replace' });
 
   // Tasks
   grunt.registerTask('build', [
