@@ -1,23 +1,19 @@
 'use strict';
-var pkg = require('./package.json');
-var currentTime = +new Date();
-var versionedAssetPath = 'assets-' + currentTime;
-var CDN = 'http://interactive.guim.co.uk/';
-var deployAssetPath = CDN + pkg.config.s3_folder + versionedAssetPath;
-var localAssetPath = 'http://localhost:' + pkg.config.port + '/assets';
+var awsCfg = require('./cfg/aws.json');
+var s3Cfg = require('./cfg/s3.json');
 
 module.exports = function(grunt) {
-  var isDev = !(grunt.cli.tasks && grunt.cli.tasks[0] === 'deploy');
-  grunt.initConfig({
+    grunt.option('force', true);
+    
+    grunt.initConfig({
 
     connect: {
       server: {
         options: {
-          port: pkg.config.port,
+          useAvailablePort: true,
           hostname: '*',
           base: './build/',
           middleware: function (connect, options, middlewares) {
-            // inject a custom middleware http://stackoverflow.com/a/24508523 
             middlewares.unshift(function (req, res, next) {
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 res.setHeader('Access-Control-Allow-Methods', '*');
@@ -28,31 +24,70 @@ module.exports = function(grunt) {
         }
       }
     },
-
-    bowerRequirejs: {
-        all: {
-            rjsConfig: './src/js/require.js',
-            options: {
-                baseUrl: './src/js/'
-            }
+    
+    browserify: {
+      dist: {
+        files: {
+          'build/app/main.js': ['src/app/js/main.js'],
+        },
+        options: {
+          browserifyOptions: {
+            debug: true,
+            fullPaths: false
+          },
+          watch: true,
+          transform: ['partialify', ['ractivate', {extensions: [ '.ract' ]} ] ]
         }
+      }
+    },
+    
+    uglify: {
+      main: {
+        options: {
+          screwIE8: true,
+          mangleProperties: false,
+          compress: {
+            dead_code: true,
+            drop_debugger: true
+          }
+        },
+        files: [{
+          expand: true, cwd: 'build/', src: '**/*.js', dest: 'build/'
+        }]
+      }
+    },
+    
+    cssmin: {
+      main: {
+        files: [{
+          expand: true, cwd: 'build/app', src: '**/*.css', dest: 'build/app'
+        }]
+      }
     },
 
     sass: {
       options: {
-            style: (isDev) ? 'expanded' : 'compressed',
-            sourcemap: 'inline'
-       },
+        sourceMap: true,
+        sourceMapEmbed: true,
+        sourceMapContents: true, 
+        sourceComments: true
+        },
         build: {
-            files: { 'build/assets/css/main.css': 'src/css/main.scss' }
+            files: { 'build/app/main.css': 'src/app/css/main.scss' }
         }
     },
-
-    autoprefixer: {
-        options: {
-            map: true
-        },
-        css: { src: 'build/assets/css/*.css' }
+    
+    postcss: {
+      options: {
+        map: true,
+        processors: [
+          require('autoprefixer-core')({browsers: 'last 3 version'}),
+          require('csswring')
+        ]
+      },
+      dist: {
+        src: 'build/app/main.css'
+      }
     },
 
     clean: ['build/'],
@@ -60,212 +95,102 @@ module.exports = function(grunt) {
     jshint: {
       options: {
           jshintrc: true,
-          force: true 
+          force: true
       },
-        files: [
-            'Gruntfile.js',
-            'src/**/*.js',
-            '!src/js/require.js'
-        ]
-    },
-
-    requirejs: {
-      compile: {
-        options: {
-          baseUrl: './src/js/',
-          mainConfigFile: './src/js/require.js',
-          optimize: (isDev) ? 'none' : 'uglify2',
-          inlineText: true,
-          name: 'almond',
-          out: 'build/assets/js/main.js',
-          generateSourceMaps: true,
-          preserveLicenseComments: false,
-          useSourceUrl: true,
-          include: ['main'],
-          wrap: {
-            start: 'define(["require"],function(require){var req=(function(){',
-            end: 'return require; }()); return req; });'
-          }
-
-        }
-      }
+        files: [ 'Gruntfile.js', 'src/**/*.js' ]
     },
 
     watch: {
-      scripts: {
-        files: [
-          'src/**/*.js',
-          'src/**/*.json',
-          'src/js/templates/*.html'
-        ],
-        tasks: ['jshint', 'requirejs', 'replace:local'],
-        options: {
-          spawn: false,
-          livereload: true
-        },
-      },
-      html: {
-        files: ['src/*.html', 'src/embed/*.html'],
-        tasks: ['copy', 'replace:local'],
-        options: {
-          spawn: false,
-          livereload: true
-        },
-      },
+      grunt: { files: ['Gruntfile.js'] },
+      html: { files: 'src/index.html', tasks: 'copy' },
       css: {
-        files: ['src/css/**/*.*'],
-        tasks: ['sass', 'autoprefixer', 'replace:local'],
-        options: {
-          spawn: false,
-          livereload: true
-        },
-      }
-    },
-
-    copy: {
-      build: {
-        files: [
-          {
-              cwd: 'src/',
-              src: ['index.html', 'boot.js', 'embed/*.*'],
-              expand: true,
-              dest: 'build/'
-          },
-          {
-              src: 'bower_components/curl/dist/curl/curl.js',
-              dest: 'build/assets/js/curl.js'
-          }
-        ]
-      }
-    },
-
-    imagemin: {
-      options: {
-        optimizationLevel: 3,
-        svgoPlugins: [{ removeViewBox: false }],
+        files: 'src/app/css/**/*.*',
+        tasks: ['sass', 'postcss']
       },
-      dynamic: {
-        files: [{
-          expand: true,
-          cwd: 'src/',
-          src: ['imgs/**/*.{png,jpg,gif,svg}'],
-          dest: 'build/assets/'
+      imgs: {
+        options: { event: ['changed', 'added', 'deleted'] },
+        files: 'src/app/imgs/**/*.*',
+        tasks: ['copy']
+      }
+    },
+    
+    copy: {
+      main: {
+        expand: true,
+        cwd: 'src/',
+        src: ['index.html', 'boot.js', 'app/imgs/*'],
+        dest: 'build/'
+      }
+    },
+    
+    cacheBust: {
+      options: {
+        baseDir: './build/',
+        enableUrlFragmentHint: true,
+        removeUrlFragmentHint: true,
+        deleteOriginals: true
+      },
+      boot: { files: { src: 'build/boot.js' } },
+      js:   { files: { src: 'build/app/*.js' } },
+      css:  { files: { src: 'build/app/*.css' } }
+    },
+    
+    replace: {
+      cdn: {
+        src: ['build/boot.js', 'build/app/*.js', 'build/app/*.css'],
+        overwrite: true,
+        replacements: [{
+          from: /(["|']?)([..\/]*app\/)/g,
+          to:  '$1' + s3Cfg.domain + s3Cfg.path + 'app/'
         }]
       }
-    },
-
-    replace: {
-        prod: {
-            options: {
-                patterns: [{
-                  match: /@@assetPath@@/g,
-                  replacement: deployAssetPath 
-                }]
-            },
-            files: [{
-                src: ['build/**/*.html', 'build/**/*.js', 'build/**/*.css'],
-                dest: './'
-            }]
-        },
-        local: {
-            options: {
-                patterns: [{
-                  match: /@@assetPath@@/g,
-                  replacement: localAssetPath
-                }]
-            },
-            files: [{
-                src: ['build/**/*.html', 'build/**/*.js', 'build/**/*.css'],
-                dest: './'
-            }]
-        }
     },
 
     s3: {
         options: {
             access: 'public-read',
-            bucket: 'gdn-cdn',
-            maxOperations: 20,
-            dryRun: (grunt.option('test')) ? true : false,
-            headers: {
-                CacheControl: 180,
-            },
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID || awsCfg.AWSAccessKeyID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || awsCfg.AWSSecretKey,
+            bucket: s3Cfg.bucket,
             gzip: true,
             gzipExclude: ['.jpg', '.gif', '.jpeg', '.png']
         },
         base: {
-            files: [{
-                cwd: 'build',
-                src: ['*.*', 'embed/*.*'],
-                dest: pkg.config.s3_folder
-            }]
+          options: { headers: { CacheControl: 180 } },
+          files: [{ cwd: 'build', src: ['*.*'], dest: s3Cfg.path }]
         },
         assets: {
-            options: {
-                headers: {
-                    CacheControl: 3600,
-                }
-            },
-            files: [{
-                cwd: 'build',
-                src: versionedAssetPath + '/**/*.*',
-                dest: pkg.config.s3_folder
-            }]
+          options: { headers: { CacheControl: 604800 } },
+            files: [{ cwd: 'build', src: 'app/**/*', dest: s3Cfg.path }]
         }
-    },
-
-    rename: {
-        main: {
-            files: [
-                {
-                    src: 'build/assets',
-                    dest: 'build/' + versionedAssetPath
-                }
-            ]
-        }
-    },
+    }
 
   });
 
-  // Task pluginsk
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-connect');
-  grunt.loadNpmTasks('grunt-contrib-requirejs');
-  grunt.loadNpmTasks('grunt-contrib-sass');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-imagemin');
-  grunt.loadNpmTasks('grunt-aws');
-  grunt.loadNpmTasks('grunt-autoprefixer');
-  grunt.loadNpmTasks('grunt-replace');
-  grunt.loadNpmTasks('grunt-contrib-rename');
-  grunt.loadNpmTasks('grunt-bower-requirejs');
-  grunt.loadNpmTasks('grunt-newer');
+  require('jit-grunt')(grunt);
 
   // Tasks
   grunt.registerTask('build', [
     'jshint',
     'clean',
     'sass',
-    'autoprefixer',
-    'bowerRequirejs',
-    'requirejs',
-    'copy',
-    'newer:imagemin'
+    'postcss',
+    'browserify',
+    'copy'
   ]);
   
   grunt.registerTask('default', [
       'build',
-      'replace:local',
       'connect',
       'watch'
   ]);
   
   grunt.registerTask('deploy', [
       'build',
-      'rename',
-      'replace:prod',
+      'cacheBust',
+      'replace',
+      'uglify',
+      'cssmin',
       's3'
   ]);
 };

@@ -1,0 +1,61 @@
+/**
+ * Project: Project name 
+ * File:    Main SCSS
+ */
+@import 'modules/_fonts';
+@import 'modules/_typography';
+@import 'modules/_palette';
+@import 'modules/_grid-system';
+@import 'modules/_breakpoints';
+
+// Optional side margins
+@import 'modules/_mq';
+@import 'modules/_side-margins';
+
+
+// Setup page
+body {
+    margin: 0;
+    padding: 0;
+}
+
+// Remove <figure> margin
+.interactive {
+    margin: 0;
+}
+
+// 
+.guvisual {
+    background: transparent url('../app/imgs/guardian-logo.png') top left no-repeat;
+    padding-top: 100px;
+    margin: 0 auto;
+    
+    // Breakpoints
+    @include mq(tablet) {
+        max-width: gs-span(9) + $gs-gutter*2;
+    }
+
+    @include mq(desktop) {
+        max-width: gs-span(12) + $gs-gutter*2;
+    }
+
+    @include mq(leftCol) {
+        padding-left: 0;
+        padding-right: 0;
+        max-width: gs-span(14) + $gs-gutter*2;
+    }
+    @include mq(wide) {
+        width: gs-span(16) + $gs-gutter*2;
+        max-width: none;
+    }
+}
+
+// Access colours
+.guvisual a {
+    color: map-get($pasteup-palette, 'guardian-brand');
+}
+
+.lastguardian {
+    width: 100%;
+    max-width: 400px;
+}

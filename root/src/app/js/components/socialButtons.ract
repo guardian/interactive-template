@@ -1,0 +1,17 @@
+<p class="twitter"><a href="{{ url }}"> {{ shareText }}</a> </p>
+
+<script>
+	var btn = document.querySelector('.twitter')
+	btn.addEventListener('click', function() {
+		console.log('clicked');
+	}, false);
+</script>
+
+<style>
+	.twitter {
+		background: rgb(154, 221, 255);
+		max-width: 200px;
+		padding: 10px;
+		text-align: center;
+	}	
+</style>

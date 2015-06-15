@@ -16,7 +16,7 @@ exports.notes = 'Project name should start with interactive- to distinguish ' +
 
 // Template-specific notes to be displayed after question prompts.
 exports.after = 'You should now install project dependencies with _npm ' +
-  'install_ and then _bower install_. After that, you may start the project '+
+  'install_. After that, you may start the project '+
   'with _grunt_.';
 
 // Any existing file or directory matching this wildcard will cause a warning.
@@ -41,7 +41,11 @@ exports.template = function(grunt, init, done) {
     var files = init.filesToCopy(props);
 
     // Actually copy (and process) files.
-    init.copyAndProcess(files, props, {noProcess: 'libs/**'});
+    init.copyAndProcess(files, props, {noProcess: 'src/app/imgs/**'});
+    
+    // Write sample aws.json
+    var awsCfg = { "AWSAccessKeyID": "AKxxxxxxxxxx", "AWSSecretKey":   "super-secret-key" };
+    grunt.file.write('cfg/aws.json', JSON.stringify(awsCfg, null, '  '));
 
     // All done!
     done();

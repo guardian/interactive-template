@@ -7,18 +7,14 @@
     </head>
     <body>
         <!-- Use the same figure elm as NGW -->
-        <figure class="element-interactive interactive"></figure>
-
-        <!-- Libs -->
-        <script src="@@assetPath@@/js/curl.js"></script>
-
+        <figure class="interactive guvisual-container"></figure>
         <!-- Simulate boot.js -->
+        <script src="//cdnjs.cloudflare.com/ajax/libs/curl/0.7.3/curl-for-jQuery/curl.js"></script>
         <script>
           var el = document.querySelector('.interactive');
-          require = curl;
           curl(['boot.js'], function(app) {
-                app.boot(el);
+             app.boot(el);
           });
         </script>
-    <body>
+    </body>
 </html>

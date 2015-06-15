@@ -6,17 +6,10 @@ If you haven't already installed the following requirements:
 
 * [nodejs](http://nodejs.org/download/)
 * [grunt-cli](http://gruntjs.com/getting-started) 
-* [bower](http://bower.io/)
-* [ruby](https://www.ruby-lang.org/en/documentation/installation/)
-* [sass](http://sass-lang.com/install)
-
-*Why Ruby and sass? Because [GUSS](https://github.com/guardian/guss) uses sass syntax that currently
-isn't supported by [libsass](https://github.com/sass/libsass).*
 
 Next, install all the dependency packages and start the app:
 ```bash
 > npm install
-> bower install
 > grunt
 ```
 
@@ -33,21 +26,22 @@ bower. Therefore, it would be preferable if you write your code as AMD modules.
 
 ```
 /build (grunt build output folder)
+/cfg
+    - s3.json (remote deploy path and domain)
+    - aws.json  (AWS access credentials)
 /src
     - boot.js (the main boot.js for inline loading, see Loading interactives)
     - index.html (used for local testing of boot.js)
-    /embed
-        - index.html (used for iframe embed loading)
-        - boot.js (used for iframe embed loading)
-    /js
-        - main.js (the starting point for the whole interactive)
-        - require.js (requireJS config paths to third-party libraries)
-        /data (sample local data)
-        /templates (sample template HTML)
-    /imgs
-    /css
-        - main.scss (the main interactive's SASS CSS styles)
-        /modules (additional SASS CSS modules)
+    /app/js
+            - main.js (the starting point for the whole interactive)
+            - sampleView.js (example of a sub-view)
+            /data (sample local data)
+            /libs (useful libraries)
+            /templates (sample template HTML)
+        /imgs
+        /css
+            - main.scss (the main interactive's SASS CSS styles)
+            /modules (additional SASS CSS modules)
 ```
 
 
@@ -99,46 +93,34 @@ Notes on `<iframe>`:
 
 
 ## Pathing to assets
-When you want to path to an asset, eg `imgs/cat.gif` you will need to prefix
-the path with `@@assetPath@@`, this will be replaced with the absolute path.
-
-An absolute path is required because interactives running via `boot.js` 
-are on the guardian.com domain. Therefore, any relative URLs will resolve to
-guardian.com instead of interactive.guim.co.uk or localhost.
+:TODO
 
 ## Installing additional libraries
 If you need to use any additional libraries such as D3 or jquery then use:
 
-`bower install d3 --save`
+`npm install d3 --save-dev`
 
-That will update the `bower.json` dependency file and allow requirejs to bundle
-the library into the main js.
+That will update the `package.json` dependency file and bundle the library
+into the main js.
 
 You can then require the library directly into your code via the define function:
 
 ```javascript
-define(['d3', function(d3) {
-  var chart = d3.box();
-});
+var d3 = require('d3');
 ```
 
 ## Deploying to S3
 Once you ready to deploy to S3 you can use grunt to upload your files.
 
 First you'll need to specify where the files are to be uploaded, this
-is done in the `package.json` file. This path should have been specified
+is done in the `cfg/s3.json` file. This path should have been specified
 during the project setup but it can be changed at any time.
 
-In the `package.json` there is a section for `config` which contains
-the path to the S3 folder that the deploy task will upload to.
+In the `cfg/s3.json` change the path where the interactive should be
+deployed too.
 
-```json
-  "config": {
-    "s3_folder": "embed/testing/path/"
-  },
-```
 
-You will also need to export your AWS credentials into your ENV variables.
+You will also need AWS credentials either in `cfg/aws.json` or your ENV variables.
 Add the following to your `~/.bashrc` or `~/.bash_profile`:
 
 ```bash
@@ -149,7 +131,7 @@ export AWS_SECRET_ACCESS_KEY=xxxxxx
 Next you'll want to simulate the upload to ensure it's going to do what
 you think it will.
 ```bash
-> grunt deploy --test
+> grunt deploy
 ```
 
 Once you're happy everything looks good, deploy for real.
