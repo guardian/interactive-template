@@ -1,5 +1,9 @@
 'use strict';
-var awsCfg = require('./cfg/aws.json');
+try {                                                
+    var awsCfg = require('./cfg/aws.json');          
+} catch(err) {                                       
+    console.error('!!ERROR: Missing cfg/aws.json\n');
+}                                                    
 var s3Cfg = require('./cfg/s3.json');
 
 module.exports = function(grunt) {
