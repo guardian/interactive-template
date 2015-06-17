@@ -1,10 +1,10 @@
 {
-  "name": "interactive-news-story",
-  "version": "0.0.4",
-  "description": "Guardian interactive project.",
+  "name": "{%= name %}",
+  "version": "0.0.5",
+  "description": "{%= description %}",
   "repository": {
     "type": "git",
-    "url": "git://github.com/andrew/temp-test.git"
+    "url": "https://github.com/guardian/{%= git_repo %}/"
   },
   "author": "Guardian Visuals",
   "license": "Apache-2.0",
