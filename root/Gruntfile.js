@@ -147,8 +147,8 @@ module.exports = function(grunt) {
         src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
         overwrite: true,
         replacements: [{
-          from: /(["|']?)([..\/]*app\/)/g,
-          to:  '$1' + s3Cfg.domain + s3Cfg.path + 'app/'
+          from: /(['"(])\s*\/+((imgs|css|js|videos)+[^\s"')]+)/gi,
+          to:  '$1' + s3Cfg.domain + s3Cfg.path + '$2'
         }]
       }
     },
@@ -168,7 +168,11 @@ module.exports = function(grunt) {
         },
         assets: {
           options: { headers: { CacheControl: 604800 } },
-            files: [{ cwd: 'build', src: 'app/**/*', dest: s3Cfg.path }]
+            files: [{
+              cwd: 'build',
+              src: ['js/**/*', 'css/**/*', 'imgs/**/*'],
+              dest: s3Cfg.path
+            }]
         }
     }
 
