@@ -32,7 +32,7 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
         files: {
-          'build/app/main.js': ['src/app/js/main.js'],
+          'build/js/main.js': ['src/main.js'],
         },
         options: {
           browserifyOptions: {
@@ -64,7 +64,7 @@ module.exports = function(grunt) {
     cssmin: {
       main: {
         files: [{
-          expand: true, cwd: 'build/app', src: '**/*.css', dest: 'build/app'
+          expand: true, cwd: 'build/', src: '**/*.css', dest: 'build/'
         }]
       }
     },
@@ -77,7 +77,7 @@ module.exports = function(grunt) {
         sourceComments: true
         },
         build: {
-            files: { 'build/app/main.css': 'src/app/css/main.scss' }
+            files: { 'build/css/main.css': 'src/css/main.scss' }
         }
     },
     
@@ -90,7 +90,7 @@ module.exports = function(grunt) {
         ]
       },
       dist: {
-        src: 'build/app/main.css'
+        src: 'build/css/main.css'
       }
     },
 
@@ -106,24 +106,27 @@ module.exports = function(grunt) {
 
     watch: {
       grunt: { files: ['Gruntfile.js'] },
-      html: { files: 'src/index.html', tasks: 'copy' },
+      html: { files: ['index.html', 'boot.js'], tasks: 'copy:boot' },
       css: {
-        files: 'src/app/css/**/*.*',
+        files: 'src/css/**/*.*',
         tasks: ['sass', 'postcss']
       },
       imgs: {
         options: { event: ['changed', 'added', 'deleted'] },
-        files: 'src/app/imgs/**/*.*',
-        tasks: ['copy']
+        files: 'src/imgs/**/*.*',
+        tasks: ['copy:imgs']
       }
     },
     
     copy: {
-      main: {
+      boot: {
         expand: true,
-        cwd: 'src/',
-        src: ['index.html', 'boot.js', 'app/imgs/*'],
+        cwd: 'boot/',
+        src: ['index.html', 'boot.js'],
         dest: 'build/'
+      },
+      imgs: {
+        expand: true, cwd: 'src/', src: 'imgs/*', dest: 'build/'
       }
     },
     
@@ -141,7 +144,7 @@ module.exports = function(grunt) {
     
     replace: {
       cdn: {
-        src: ['build/boot.js', 'build/app/*.js', 'build/app/*.css'],
+        src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
         overwrite: true,
         replacements: [{
           from: /(["|']?)([..\/]*app\/)/g,

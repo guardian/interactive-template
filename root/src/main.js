@@ -1,5 +1,5 @@
 var Ractive = require('ractive');
-var getJSON = require('./utils/getjson'); 
+var getJSON = require('./js/utils/getjson'); 
 var app;
 
 /**
@@ -18,13 +18,13 @@ function updateView(data) {
 function boot(el) {
 	app = new Ractive( {
 	    el: el,
-	    template: require('./templates/base.html'),
+	    template: require('./html/base.html'),
 	    data: {
 			games: require('./data/data.json')
 		},
 		components: {
-			subView: require('./subView'),
-			socialButtons: require('./components/socialButtons')
+			subView: require('./js/subView'),
+			socialButtons: require('./js/components/socialButtons')
 		}
 	});
 	
@@ -33,5 +33,5 @@ function boot(el) {
 	getJSON(url, updateView);
 }
 
-// AMD define for boot.js
+// DO NOT DELETE - needed for the boot.js to work.
 define(function() { return { boot: boot }; });

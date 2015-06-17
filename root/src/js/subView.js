@@ -7,5 +7,5 @@ function onrender() {
 module.exports = Ractive.extend({
   		isolated: false,
 	  	onrender: onrender,
-  		template: require('./templates/subView.html')
+  		template: require('../html/subView.html')
 });
