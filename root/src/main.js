@@ -1,6 +1,12 @@
 var Ractive = require('ractive');
-var getJSON = require('./js/utils/getjson'); 
+var getJSON = require('./js/utils/getjson');
+var detect = require('./js/utils/detect');  
 var app;
+
+
+// Useful detection tool. See js/utils/detect.js for more.
+console.log('Is IOS: ', detect.isIOS());
+console.log('Connection speed: ', detect.getConnectionSpeed());
 
 /**
  * Update app using fetched JSON data
@@ -33,5 +39,5 @@ function boot(el) {
 	getJSON(url, updateView);
 }
 
-// DO NOT DELETE - needed for the boot.js to work.
+// DO NOT DELETE - needed for boot.js to work.
 define(function() { return { boot: boot }; });
