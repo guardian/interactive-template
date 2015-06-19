@@ -106,7 +106,7 @@ module.exports = function(grunt) {
 
     watch: {
       grunt: { files: ['Gruntfile.js'] },
-      html: { files: ['index.html', 'boot.js'], tasks: 'copy:boot' },
+      html:  { files: ['boot/index.html', 'boot/boot.js'], tasks: 'copy:boot' },
       css: {
         files: 'src/css/**/*.*',
         tasks: ['sass', 'postcss']

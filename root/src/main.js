@@ -1,6 +1,6 @@
 var Ractive = require('ractive');
 var getJSON = require('./js/utils/getjson');
-var detect = require('./js/utils/detect');  
+var detect = require('./js/utils/detect');
 var app;
 
 
@@ -9,7 +9,7 @@ console.log('Is IOS: ', detect.isIOS());
 console.log('Connection speed: ', detect.getConnectionSpeed());
 
 /**
- * Update app using fetched JSON data
+ * Update app using fetched JSON data.
  * @param {object:json} data - JSON spreedsheet data.
  */
 function updateView(data) {
@@ -17,11 +17,12 @@ function updateView(data) {
 }
 
 
+
 /**
  * Boot the app.
- * @param {object:dom} el - <figure> element passed by boot.js. 
+ * @param {object:dom} el - <figure> element on the page. 
  */
-function boot(el) {
+function init() {
 	app = new Ractive( {
 	    el: el,
 	    template: require('./html/base.html'),
@@ -39,5 +40,5 @@ function boot(el) {
 	getJSON(url, updateView);
 }
 
-// DO NOT DELETE - needed for boot.js to work.
-define(function() { return { boot: boot }; });
+var el = window.gv_el || document.querySelector('.interactive');
+init(el);
