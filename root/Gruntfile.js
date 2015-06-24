@@ -28,20 +28,23 @@ module.exports = function(grunt) {
         }
       }
     },
-    
-    browserify: {
-      dist: {
-        files: {
-          'build/js/main.js': ['src/main.js'],
-        },
-        options: {
-          browserifyOptions: {
-            debug: true,
-            fullPaths: false
-          },
-          watch: true,
-          transform: ['partialify']
+
+    webpack: {
+      options: {
+        entry: './src/main.js',
+        output: { path: "./build/js/", filename: "main.js" },
+        module: {
+          loaders: [
+            { test: /\.html$/, loader: "raw-loader" },
+            { test: /\.json$/, loader: "json-loader" }
+          ]
         }
+      },
+      dist: { debug: false },
+      dev: {
+        debug: true,
+        devtool: 'eval-cheap-source-map',
+        watch: true
       }
     },
     
@@ -186,18 +189,19 @@ module.exports = function(grunt) {
     'clean',
     'sass',
     'postcss',
-    'browserify',
     'copy'
   ]);
   
   grunt.registerTask('default', [
       'build',
+      'webpack:dev',
       'connect',
       'watch'
   ]);
   
   grunt.registerTask('deploy', [
       'build',
+      'webpack:dist',
       'cacheBust',
       'replace',
       'uglify',
