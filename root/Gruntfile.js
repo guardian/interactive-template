@@ -32,10 +32,10 @@ module.exports = function(grunt) {
     webpack: {
       options: {
         entry: './src/main.js',
-        output: { path: "./build/js/", filename: "main.js" },
+        output: { path: "./build/js/", filename: 'main.js' },
         module: {
           loaders: [
-            { test: /\.html$/, loader: "raw-loader" },
+            { test: /\.(html|txt|css)$/, loader: 'raw-loader' },
             { test: /\.json$/, loader: "json-loader" }
           ]
         }
@@ -130,6 +130,9 @@ module.exports = function(grunt) {
       },
       imgs: {
         expand: true, cwd: 'src/', src: 'imgs/*', dest: 'build/'
+      },
+      data: {
+        expand: true, cwd: 'src/', src: 'data/*', dest: 'build/'
       }
     },
     
@@ -150,7 +153,7 @@ module.exports = function(grunt) {
         src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
         overwrite: true,
         replacements: [{
-          from: /(['"(])\s*\/+((imgs|css|js|videos)+[^\s"')]+)/gi,
+          from: /(['"(])\s*\/+((imgs|css|js|videos|data)+[^\s"')]+)/gi,
           to:  '$1' + s3Cfg.domain + s3Cfg.path + '$2'
         }]
       }
@@ -158,12 +161,12 @@ module.exports = function(grunt) {
 
     s3: {
         options: {
-            access: 'public-read',
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID || awsCfg.AWSAccessKeyID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || awsCfg.AWSSecretKey,
-            bucket: s3Cfg.bucket,
-            gzip: true,
-            gzipExclude: ['.jpg', '.gif', '.jpeg', '.png']
+          access: 'public-read',
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID || awsCfg.AWSAccessKeyID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || awsCfg.AWSSecretKey,
+          bucket: s3Cfg.bucket,
+          gzip: true,
+          gzipExclude: ['.jpg', '.gif', '.jpeg', '.png']
         },
         base: {
           options: { headers: { CacheControl: 180 } },
@@ -173,7 +176,7 @@ module.exports = function(grunt) {
           options: { headers: { CacheControl: 604800 } },
             files: [{
               cwd: 'build',
-              src: ['js/**/*', 'css/**/*', 'imgs/**/*'],
+              src: ['js/**/*', 'css/**/*', 'imgs/**/*', 'data/**/*'],
               dest: s3Cfg.path
             }]
         }
