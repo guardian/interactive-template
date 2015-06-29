@@ -43,7 +43,7 @@ module.exports = function (grunt) {
       dist: { debug: false },
       dev: {
         debug: true,
-        devtool: 'eval-cheap-source-map',
+        devtool: 'source-map',
         watch: true
       }
     },
@@ -75,7 +75,6 @@ module.exports = function (grunt) {
     sass: {
       options: {
         sourceMap: true,
-        sourceMapEmbed: true,
         sourceMapContents: true,
         sourceComments: true
       },
