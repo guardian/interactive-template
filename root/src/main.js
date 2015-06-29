@@ -23,10 +23,10 @@ function updateView(data) {
  * @param {object:dom} el - <figure> element on the page. 
  */
 function init() {
-	app = new Ractive( {
-	    el: el,
-	    template: require('./html/base.html'),
-	    data: {
+	app = new Ractive({
+		el: el,
+		template: require('./html/base.html'),
+		data: {
 			games: require('./data/data.json')
 		},
 		components: {
@@ -34,9 +34,9 @@ function init() {
 			socialButtons: require('./js/components/socialButtons')
 		}
 	});
-	
+
 	var key = '1hy65wVx-pjwjSt2ZK7y4pRDlX9wMXFQbwKN0v3XgtXM';
-	var url = '//visuals.guim.co.uk/spreadsheetdata/'+key+'.json';
+	var url = 'https://interactive.guim.co.uk/spreadsheetdata/' + key + '.json';
 	getJSON(url, updateView);
 }
 

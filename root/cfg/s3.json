@@ -1,5 +1,5 @@
 {
 	"bucket": "gdn-cdn",
 	"path":   "{%= s3_path %}",
-	"domain": "https://visuals.guim.co.uk/"
+	"domain": "https://interactive.guim.co.uk/"
 }
