@@ -156,7 +156,17 @@ module.exports = function(grunt) {
           from: /(['"(])\s*\/+((imgs|css|js|videos|data)+[^\s"')]+)/gi,
           to:  '$1' + s3Cfg.domain + s3Cfg.path + '$2'
         }]
+      },
+      
+      local: {
+        src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
+        overwrite: true,
+        replacements: [{
+          from: /(['"(])\s*\/+((imgs|css|js|videos|data)+[^\s"')]+)/gi,
+          to:  '$1' + 'http://localhost:<%= connect.server.options.port %>/' + '$2'
+        }]
       }
+      
     },
 
     s3: {
@@ -199,6 +209,7 @@ module.exports = function(grunt) {
       'build',
       'webpack:dev',
       'connect',
+      'replace:local',
       'watch'
   ]);
   
@@ -206,7 +217,7 @@ module.exports = function(grunt) {
       'build',
       'webpack:dist',
       'cacheBust',
-      'replace',
+      'replace:cdn',
       'uglify',
       'cssmin',
       's3'
