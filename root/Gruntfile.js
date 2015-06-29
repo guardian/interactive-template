@@ -1,15 +1,15 @@
 'use strict';
-try {                                                
-    var awsCfg = require('./cfg/aws.json');          
-} catch(err) {                                       
-    console.error('!!ERROR: Missing cfg/aws.json\n');
-}                                                    
+try {
+  var awsCfg = require('./cfg/aws.json');
+} catch (err) {
+  console.error('!!ERROR: Missing cfg/aws.json\n');
+}
 var s3Cfg = require('./cfg/s3.json');
 
-module.exports = function(grunt) {
-    grunt.option('force', true);
-    
-    grunt.initConfig({
+module.exports = function (grunt) {
+  grunt.option('force', true);
+
+  grunt.initConfig({
 
     connect: {
       server: {
@@ -19,9 +19,9 @@ module.exports = function(grunt) {
           base: './build/',
           middleware: function (connect, options, middlewares) {
             middlewares.unshift(function (req, res, next) {
-                res.setHeader('Access-Control-Allow-Origin', '*');
-                res.setHeader('Access-Control-Allow-Methods', '*');
-                return next();
+              res.setHeader('Access-Control-Allow-Origin', '*');
+              res.setHeader('Access-Control-Allow-Methods', '*');
+              return next();
             });
             return middlewares;
           }
@@ -47,7 +47,7 @@ module.exports = function(grunt) {
         watch: true
       }
     },
-    
+
     uglify: {
       main: {
         options: {
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
         }]
       }
     },
-    
+
     cssmin: {
       main: {
         files: [{
@@ -76,19 +76,19 @@ module.exports = function(grunt) {
       options: {
         sourceMap: true,
         sourceMapEmbed: true,
-        sourceMapContents: true, 
+        sourceMapContents: true,
         sourceComments: true
-        },
-        build: {
-            files: { 'build/css/main.css': 'src/css/main.scss' }
-        }
+      },
+      build: {
+        files: { 'build/css/main.css': 'src/css/main.scss' }
+      }
     },
-    
+
     postcss: {
       options: {
         map: true,
         processors: [
-          require('autoprefixer-core')({browsers: 'last 3 version'}),
+          require('autoprefixer-core')({ browsers: 'last 3 version' }),
           require('csswring')
         ]
       },
@@ -101,15 +101,15 @@ module.exports = function(grunt) {
 
     jshint: {
       options: {
-          jshintrc: true,
-          force: true
+        jshintrc: true,
+        force: true
       },
-        files: [ 'Gruntfile.js', 'src/**/*.js' ]
+      files: ['Gruntfile.js', 'src/**/*.js']
     },
 
     watch: {
       grunt: { files: ['Gruntfile.js'] },
-      html:  { files: ['boot/index.html', 'boot/boot.js'], tasks: 'copy:boot' },
+      html: { files: ['boot/index.html', 'boot/boot.js'], tasks: 'copy:boot' },
       css: {
         files: 'src/css/**/*.*',
         tasks: ['sass', 'postcss']
@@ -120,7 +120,7 @@ module.exports = function(grunt) {
         tasks: ['copy:imgs']
       }
     },
-    
+
     copy: {
       boot: {
         expand: true,
@@ -135,7 +135,7 @@ module.exports = function(grunt) {
         expand: true, cwd: 'src/', src: 'data/*', dest: 'build/'
       }
     },
-    
+
     cacheBust: {
       options: {
         baseDir: './build/',
@@ -144,52 +144,52 @@ module.exports = function(grunt) {
         deleteOriginals: true
       },
       boot: { files: { src: 'build/boot.js' } },
-      js:   { files: { src: 'build/app/*.js' } },
-      css:  { files: { src: 'build/app/*.css' } }
+      js: { files: { src: 'build/app/*.js' } },
+      css: { files: { src: 'build/app/*.css' } }
     },
-    
+
     replace: {
       cdn: {
         src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
         overwrite: true,
         replacements: [{
           from: /(['"(])\s*\/+((imgs|css|js|videos|data)+[^\s"')]+)/gi,
-          to:  '$1' + s3Cfg.domain + s3Cfg.path + '$2'
+          to: '$1' + s3Cfg.domain + s3Cfg.path + '$2'
         }]
       },
-      
+
       local: {
         src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
         overwrite: true,
         replacements: [{
           from: /(['"(])\s*\/+((imgs|css|js|videos|data)+[^\s"')]+)/gi,
-          to:  '$1' + 'http://localhost:<%= connect.server.options.port %>/' + '$2'
+          to: '$1' + 'http://localhost:<%= connect.server.options.port %>/' + '$2'
         }]
       }
-      
+
     },
 
     s3: {
-        options: {
-          access: 'public-read',
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID || awsCfg.AWSAccessKeyID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || awsCfg.AWSSecretKey,
-          bucket: s3Cfg.bucket,
-          gzip: true,
-          gzipExclude: ['.jpg', '.gif', '.jpeg', '.png']
-        },
-        base: {
-          options: { headers: { CacheControl: 180 } },
-          files: [{ cwd: 'build', src: ['*.*'], dest: s3Cfg.path }]
-        },
-        assets: {
-          options: { headers: { CacheControl: 300 } },
-            files: [{
-              cwd: 'build',
-              src: ['js/**/*', 'css/**/*', 'imgs/**/*', 'data/**/*'],
-              dest: s3Cfg.path
-            }]
-        }
+      options: {
+        access: 'public-read',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || awsCfg.AWSAccessKeyID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || awsCfg.AWSSecretKey,
+        bucket: s3Cfg.bucket,
+        gzip: true,
+        gzipExclude: ['.jpg', '.gif', '.jpeg', '.png']
+      },
+      base: {
+        options: { headers: { CacheControl: 180 } },
+        files: [{ cwd: 'build', src: ['*.*'], dest: s3Cfg.path }]
+      },
+      assets: {
+        options: { headers: { CacheControl: 300 } },
+        files: [{
+          cwd: 'build',
+          src: ['js/**/*', 'css/**/*', 'imgs/**/*', 'data/**/*'],
+          dest: s3Cfg.path
+        }]
+      }
     }
 
   });
@@ -204,22 +204,22 @@ module.exports = function(grunt) {
     'postcss',
     'copy'
   ]);
-  
+
   grunt.registerTask('default', [
-      'build',
-      'webpack:dev',
-      'connect',
-      'replace:local',
-      'watch'
+    'build',
+    'webpack:dev',
+    'connect',
+    'replace:local',
+    'watch'
   ]);
-  
+
   grunt.registerTask('deploy', [
-      'build',
-      'webpack:dist',
-      'cacheBust',
-      'replace:cdn',
-      'uglify',
-      'cssmin',
-      's3'
+    'build',
+    'webpack:dist',
+    'cacheBust',
+    'replace:cdn',
+    'uglify',
+    'cssmin',
+    's3'
   ]);
 };
