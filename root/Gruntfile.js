@@ -1,4 +1,5 @@
 'use strict';
+var webpack = require('webpack');
 try {
   var awsCfg = require('./cfg/aws.json');
 } catch (err) {
@@ -14,6 +15,7 @@ module.exports = function (grunt) {
     connect: {
       server: {
         options: {
+          livereload: true,
           useAvailablePort: true,
           hostname: '*',
           base: './build/',
@@ -32,7 +34,12 @@ module.exports = function (grunt) {
     webpack: {
       options: {
         entry: './src/main.js',
-        output: { path: "./build/js/", filename: 'main.js' },
+        output: {
+          path: './build/js/',
+          filename: 'main.js',
+          library: 'gv',
+          libraryTarget: 'umd'
+        },
         module: {
           loaders: [
             { test: /\.(html|txt|css)$/, loader: 'raw-loader' },
@@ -40,35 +47,21 @@ module.exports = function (grunt) {
           ]
         }
       },
-      dist: { debug: false },
+      dist: {
+        debug: false,
+        plugins: [
+          new webpack.optimize.UglifyJsPlugin({
+            compress: {
+              drop_console: true,
+              dead_code: true,
+              drop_debugger: true
+            }
+          })
+        ]
+      },
       dev: {
         debug: true,
-        devtool: 'source-map',
-        watch: true
-      }
-    },
-
-    uglify: {
-      main: {
-        options: {
-          screwIE8: true,
-          mangleProperties: false,
-          compress: {
-            dead_code: true,
-            drop_debugger: true
-          }
-        },
-        files: [{
-          expand: true, cwd: 'build/', src: '**/*.js', dest: 'build/'
-        }]
-      }
-    },
-
-    cssmin: {
-      main: {
-        files: [{
-          expand: true, cwd: 'build/', src: '**/*.css', dest: 'build/'
-        }]
+        devtool: 'cheap-source-map'
       }
     },
 
@@ -87,7 +80,7 @@ module.exports = function (grunt) {
       options: {
         map: true,
         processors: [
-          require('autoprefixer-core')({ browsers: 'last 3 version' }),
+          require('autoprefixer-core')(),
           require('csswring')
         ]
       },
@@ -108,13 +101,23 @@ module.exports = function (grunt) {
 
     watch: {
       grunt: { files: ['Gruntfile.js'] },
-      html: { files: ['boot/index.html', 'boot/boot.js'], tasks: 'copy:boot' },
+      html: {
+        files: ['boot/index.html', 'boot/boot.js'],
+        tasks: ['copy:boot', 'replace:local'],
+        options: { livereload: true }
+      },
       css: {
         files: 'src/css/**/*.*',
-        tasks: ['sass', 'postcss']
+        tasks: ['sass', 'postcss', 'replace:local'],
+        options: { livereload: true }
+      },
+      js: {
+        files: ['src/main.js', 'src/js/**/*.js', 'src/html/**/*.html'] ,
+        tasks: ['webpack:dev', 'replace:local'],
+        options: { livereload: true }
       },
       imgs: {
-        options: { event: ['changed', 'added', 'deleted'] },
+        options: { event: ['changed', 'added', 'deleted'], livereload: true },
         files: 'src/imgs/**/*.*',
         tasks: ['copy:imgs']
       }
@@ -199,15 +202,15 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'jshint',
     'clean',
+    'copy',
     'sass',
     'postcss',
-    'copy'
   ]);
 
   grunt.registerTask('default', [
+    'connect',
     'build',
     'webpack:dev',
-    'connect',
     'replace:local',
     'watch'
   ]);
@@ -217,8 +220,6 @@ module.exports = function (grunt) {
     'webpack:dist',
     'cacheBust',
     'replace:cdn',
-    'uglify',
-    'cssmin',
     's3'
   ]);
 };
