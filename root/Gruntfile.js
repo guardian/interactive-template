@@ -6,7 +6,6 @@ try {
   console.error('!!ERROR: Missing cfg/aws.json\n');
 }
 var s3Cfg = require('./cfg/s3.json');
-s3Cfg.path = s3Cfg.path.trim();
 if (s3Cfg.path.charAt(s3Cfg.path.length - 1) !== '/') {
   s3Cfg.path += '/';
 }
@@ -51,11 +50,12 @@ module.exports = function (grunt) {
           ]
         }
       },
-      dist: {
+      deploy: {
         debug: false,
         plugins: [
           new webpack.optimize.UglifyJsPlugin({
             compress: {
+              warnings: false,
               drop_console: true,
               dead_code: true,
               drop_debugger: true
@@ -93,7 +93,11 @@ module.exports = function (grunt) {
       }
     },
 
-    clean: ['build/'],
+    clean: {
+      temp: ['temp/'],
+      build: ['build/'],
+      unhashed: []
+    },
 
     jshint: {
       options: {
@@ -105,25 +109,30 @@ module.exports = function (grunt) {
 
     watch: {
       grunt: { files: ['Gruntfile.js'] },
-      html: {
+      boot: {
         files: ['boot/index.html', 'boot/boot.js'],
-        tasks: ['copy:boot', 'replace:local'],
+        tasks: ['build', 'webpack:dev', 'cachebust'],
         options: { livereload: true }
       },
       css: {
         files: 'src/css/**/*.*',
-        tasks: ['sass', 'postcss', 'replace:local'],
+        tasks: ['sass', 'postcss', 'cachebust'],
         options: { livereload: true }
       },
       js: {
-        files: ['src/main.js', 'src/js/**/*.js', 'src/html/**/*.html'] ,
-        tasks: ['webpack:dev', 'replace:local'],
+        files: ['src/main.js', 'src/js/**/*.js', 'src/html/**/*.html'],
+        tasks: ['webpack:dev', 'cachebust'],
+        options: { livereload: true }
+      },
+      data: {
+        files: ['src/data/**/*.*'],
+        tasks: ['build', 'webpack:dev', 'cachebust'],
         options: { livereload: true }
       },
       imgs: {
         options: { event: ['changed', 'added', 'deleted'], livereload: true },
         files: 'src/imgs/**/*.*',
-        tasks: ['copy:imgs']
+        tasks: ['build', 'webpack:dev', 'cachebust']
       }
     },
 
@@ -142,37 +151,26 @@ module.exports = function (grunt) {
       }
     },
 
-    cacheBust: {
+    hash: {
       options: {
-        baseDir: './build/',
-        enableUrlFragmentHint: true,
-        removeUrlFragmentHint: true,
-        deleteOriginals: true
+        mapping: 'temp/assets.json',
+        srcBasePath: 'build',
+        destBasePath: 'build',
+        flatten: false,
+        hashLength: 8
       },
-      boot: { files: { src: 'build/boot.js' } },
-      js: { files: { src: 'build/app/*.js' } },
-      css: { files: { src: 'build/app/*.css' } }
+      js: { src: 'build/js/**/*.js' },
+      css: { src: 'build/css/**/*.css' },
+      img: { src: 'build/imgs/**/*.*' },
+      data: { src: 'build/data/**/*.*' },
     },
 
     replace: {
-      cdn: {
+      main: {
         src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
         overwrite: true,
-        replacements: [{
-          from: /(['"(])\s*\/+((imgs|css|js|videos|data)+[^\s"')]+)/gi,
-          to: '$1' + s3Cfg.domain + s3Cfg.path + '$2'
-        }]
-      },
-
-      local: {
-        src: ['build/boot.js', 'build/js/*.js', 'build/css/*.css'],
-        overwrite: true,
-        replacements: [{
-          from: /(['"(])\s*\/+((imgs|css|js|videos|data)+[^\s"')]+)/gi,
-          to: '$1' + 'http://localhost:<%= connect.server.options.port %>/' + '$2'
-        }]
+        replacements: [] // see cachebust
       }
-
     },
 
     s3: {
@@ -199,31 +197,70 @@ module.exports = function (grunt) {
     }
 
   });
+  
+  // Hash files and replace references
+  grunt.registerTask('cachebust', 'hash files, replace reference', function (target) {
+    var port;
+    if (grunt.file.isFile('./temp/port.json')) {
+      port = grunt.file.readJSON('temp/port.json').port;
+    } else {
+      port = grunt.config.data.connect.server.options.port;
+      grunt.file.write('temp/port.json', JSON.stringify({ port: port }));
+    }
+
+    var assets = {};
+    var toPrefix = '';
+    if (target && target === 'deploy') {
+      assets = grunt.file.readJSON('temp/assets.json');
+      var hashedFiles = Object.keys(assets).map(function (path) { return 'build/' + path; });
+      grunt.config.data.clean.unhashed = hashedFiles;
+      toPrefix = s3Cfg.domain + s3Cfg.path;
+    } else {
+      grunt.file.expand('build/{js,imgs,css,data}/**/*.*').forEach(function (path) {
+        var newPath = path.replace('build/', '');
+        assets[newPath] = newPath;
+      });
+      toPrefix = 'http://localhost:' + port + '/';
+    }
+
+    var repalceFiles = Object.keys(assets).map(function (path) {
+      var regEx = new RegExp('([\'"\(])\W?/' + path, 'g');
+      return {
+        from: regEx,
+        to: '$1' + toPrefix + assets[path]
+      };
+    });
+
+    grunt.config.data.replace.main.replacements = repalceFiles;
+    grunt.task.run('replace');
+  });
 
   require('jit-grunt')(grunt, { s3: 'grunt-aws', replace: 'grunt-text-replace' });
 
   // Tasks
   grunt.registerTask('build', [
     'jshint',
-    'clean',
+    'clean:build',
     'copy',
     'sass',
-    'postcss',
+    'postcss'
   ]);
 
   grunt.registerTask('default', [
+    'clean',
     'connect',
     'build',
     'webpack:dev',
-    'replace:local',
+    'cachebust',
     'watch'
   ]);
 
   grunt.registerTask('deploy', [
     'build',
-    'webpack:dist',
-    'cacheBust',
-    'replace:cdn',
+    'webpack:deploy',
+    'hash',
+    'cachebust:deploy',
+    'clean:unhashed',
     's3'
   ]);
 };
