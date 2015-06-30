@@ -99,14 +99,6 @@ module.exports = function (grunt) {
       unhashed: []
     },
 
-    jshint: {
-      options: {
-        jshintrc: true,
-        force: true
-      },
-      files: ['Gruntfile.js', 'src/**/*.js']
-    },
-
     watch: {
       grunt: { files: ['Gruntfile.js'] },
       boot: {
@@ -239,7 +231,6 @@ module.exports = function (grunt) {
 
   // Tasks
   grunt.registerTask('build', [
-    'jshint',
     'clean:build',
     'copy',
     'sass',
