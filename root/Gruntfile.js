@@ -224,7 +224,7 @@ module.exports = function (grunt) {
     }
 
     var repalceFiles = Object.keys(assets).map(function (path) {
-      var regEx = new RegExp('([\'"\(])\W?/' + path, 'g');
+      var regEx = new RegExp('([\'"=\(])\W?/' + path, 'g');
       return {
         from: regEx,
         to: '$1' + toPrefix + assets[path]
