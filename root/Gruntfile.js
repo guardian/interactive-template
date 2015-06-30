@@ -6,6 +6,10 @@ try {
   console.error('!!ERROR: Missing cfg/aws.json\n');
 }
 var s3Cfg = require('./cfg/s3.json');
+s3Cfg.path = s3Cfg.path.trim();
+if (s3Cfg.path.charAt(s3Cfg.path.length - 1) !== '/') {
+  s3Cfg.path += '/';
+}
 
 module.exports = function (grunt) {
   grunt.option('force', true);
