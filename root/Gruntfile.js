@@ -175,11 +175,11 @@ module.exports = function (grunt) {
         gzipExclude: ['.jpg', '.gif', '.jpeg', '.png']
       },
       base: {
-        options: { headers: { CacheControl: 180 } },
+        options: { headers: { CacheControl: 60 } },
         files: [{ cwd: 'build', src: ['*.*'], dest: s3Cfg.path }]
       },
       assets: {
-        options: { headers: { CacheControl: 300 } },
+        options: { headers: { CacheControl: 86400 } },
         files: [{
           cwd: 'build',
           src: ['js/**/*', 'css/**/*', 'imgs/**/*', 'data/**/*'],
