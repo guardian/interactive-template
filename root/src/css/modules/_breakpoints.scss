@@ -21,3 +21,12 @@ $mq-breakpoints: (
     leftCol:         gs-span(14) + $gs-gutter*2, // 1140px
     wide:            gs-span(16) + $gs-gutter*2, // 1300px
 );
+
+@function breakpoints($key) {
+  @if map-has-key($mq-breakpoints, $key) {
+    @return map-get($mq-breakpoints, $key);
+  }
+
+  @warn "Unknown `#{$key}` in $mq-breakpoints.";
+  @return null;
+}

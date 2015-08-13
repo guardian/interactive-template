@@ -17,7 +17,7 @@ function getJSON(url, callback) {
             console.error('Error fetching json:', xhr.status , xhr.statusText);
             return;
         }
-        
+
         var json;
         try {
             json = JSON.parse(xhr.responseText);
@@ -39,5 +39,6 @@ function getJSON(url, callback) {
         xhr.send();
     }, 0);
 }
+
 
 module.exports = getJSON;

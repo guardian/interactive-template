@@ -1,11 +1,11 @@
-# {%= name %} 
+# {%= name %}
 {%= description %}
 
 ## Getting started
 If you haven't already installed the following requirements:
 
 * [nodejs](http://nodejs.org/download/)
-* [grunt-cli](http://gruntjs.com/getting-started) 
+* [grunt-cli](http://gruntjs.com/getting-started)
 
 Next, install all the dependency packages and start the app:
 ```bash
@@ -50,10 +50,10 @@ There are two methods of running an interactive on a Guardian page, first is the
 `boot.js` which allows for JavaScript injection of assets directly into the page.
 The other method is via an `iframe`.
 
-By default the interactive template supports both of these methods, it's up to 
+By default the interactive template supports both of these methods, it's up to
 you to decide which is most appropriate for the type of interactive being built.
 
-### 1. In-line loading via `boot.js` 
+### 1. In-line loading via `boot.js`
 If you want to run inside scope of Guardian page and not within an iframe you'll
 need to choose the `boot.js` method. All assets including HTML will need to be
 dynamically loaded. The example project included in this template compiles
@@ -70,7 +70,7 @@ Notes on `boot.js`:
 * Requires an AMD `boot.js` boot loader file
 
 ### 2. Embed loading via `<iframe>`
-A simpler option is to load the interactive via an `<iframe>`, this allows you to 
+A simpler option is to load the interactive via an `<iframe>`, this allows you to
 use standard HTML pages and `<script> <link>` tags to load resources. It can be
 useful when working with third-party code. However, the interactive will be
 running from the `interactive.guim.co.uk` domain and therefore will not have
@@ -78,7 +78,7 @@ access to the Guardian page or user details via identity.
 
 **NOTE**  You must use a URL with the `/embed/` path for it to be iframed.
 
-Iframes are useful when the interactive is intended to be embedded in multiple 
+Iframes are useful when the interactive is intended to be embedded in multiple
 articles, such as story package navigation or widget.
 
 Notes on `<iframe>`:
@@ -93,7 +93,21 @@ Notes on `<iframe>`:
 
 
 ## Pathing to assets
-:TODO
+Use an absolute path to static assets ie. `/imgs/pic.jpg`. These paths are
+replaced in the build process with the full remote path including a cache
+hash within the filename.
+
+```
+background-image: url(/imgs/pic.jpg);
+...
+<img src="/imgs/cat.gif" />
+...
+d3.csv('/data/cites.csv)
+```
+
+**Note** Dynamically generated paths will not work. The build process does
+not concatinate strings. Only existing full paths will work. Use a look-up
+table if necessary.
 
 ## Installing additional libraries
 If you need to use any additional libraries such as D3 or jquery then use:

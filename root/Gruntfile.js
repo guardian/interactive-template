@@ -1,10 +1,5 @@
 'use strict';
 var webpack = require('webpack');
-try {
-  var awsCfg = require('./cfg/aws.json');
-} catch (err) {
-  console.error('!!ERROR: Missing cfg/aws.json\n');
-}
 var s3Cfg = require('./cfg/s3.json');
 if (s3Cfg.path.charAt(s3Cfg.path.length - 1) !== '/') {
   s3Cfg.path += '/';
@@ -45,20 +40,19 @@ module.exports = function (grunt) {
         },
         module: {
           loaders: [
-            { test: /\.(html|txt|css)$/, loader: 'raw-loader' },
+            { test: /\.(html|txt|css|svg|csv)$/, loader: 'raw-loader' },
             { test: /\.json$/, loader: "json-loader" }
           ]
         }
       },
       deploy: {
         debug: false,
+        devtool: 'source-map',
         plugins: [
           new webpack.optimize.UglifyJsPlugin({
             compress: {
               warnings: false,
-              drop_console: true,
-              dead_code: true,
-              drop_debugger: true
+              dead_code: true
             }
           })
         ]
@@ -112,18 +106,13 @@ module.exports = function (grunt) {
         options: { livereload: true }
       },
       js: {
-        files: ['src/main.js', 'src/js/**/*.js', 'src/html/**/*.html'],
+        files: ['src/main.js', 'src/*.js', 'src/utils/*.js', 'src/html/**/*.html'],
         tasks: ['webpack:dev', 'cachebust'],
         options: { livereload: true }
       },
-      data: {
-        files: ['src/data/**/*.*'],
-        tasks: ['build', 'webpack:dev', 'cachebust'],
-        options: { livereload: true }
-      },
-      imgs: {
+      assets: {
         options: { event: ['changed', 'added', 'deleted'], livereload: true },
-        files: 'src/imgs/**/*.*',
+        files: ['src/imgs/**/*.*', 'src/data/**/*.*'],
         tasks: ['build', 'webpack:dev', 'cachebust']
       }
     },
@@ -168,28 +157,26 @@ module.exports = function (grunt) {
     s3: {
       options: {
         access: 'public-read',
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || awsCfg.AWSAccessKeyID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || awsCfg.AWSSecretKey,
         bucket: s3Cfg.bucket,
         gzip: true,
         gzipExclude: ['.jpg', '.gif', '.jpeg', '.png']
       },
       base: {
         options: { headers: { CacheControl: 60 } },
-        files: [{ cwd: 'build', src: ['*.*'], dest: s3Cfg.path }]
+        files: [{ cwd: 'build', src: ['*.*', '**/*.map'], dest: s3Cfg.path }]
       },
       assets: {
         options: { headers: { CacheControl: 86400 } },
         files: [{
           cwd: 'build',
-          src: ['js/**/*', 'css/**/*', 'imgs/**/*', 'data/**/*'],
+          src: ['js/**/*.js', 'css/**/*.css', 'imgs/**/*', 'data/**/*'],
           dest: s3Cfg.path
         }]
       }
     }
 
   });
-  
+
   // Hash files and replace references
   grunt.registerTask('cachebust', 'hash files, replace reference', function (target) {
     var port;

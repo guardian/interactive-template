@@ -42,10 +42,6 @@ exports.template = function(grunt, init, done) {
 
     // Actually copy (and process) files.
     init.copyAndProcess(files, props, {noProcess: 'src/imgs/**'});
-    
-    // Write sample aws.json
-    var awsCfg = { "AWSAccessKeyID": "AKxxxxxxxxxx", "AWSSecretKey":   "super-secret-key" };
-    grunt.file.write('cfg/aws.json', JSON.stringify(awsCfg, null, '  '));
 
     // All done!
     done();
