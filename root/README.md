@@ -32,12 +32,11 @@ bower. Therefore, it would be preferable if you write your code as AMD modules.
 /src
     - boot.js (the main boot.js for inline loading, see Loading interactives)
     - index.html (used for local testing of boot.js)
-    /app/js
-            - main.js (the starting point for the whole interactive)
-            - sampleView.js (example of a sub-view)
-            /data (sample local data)
-            /libs (useful libraries)
-            /templates (sample template HTML)
+    /app/
+        - main.js (the starting point for the whole interactive)
+        /data (sample local data)
+        /libs (useful libraries)
+        /templates (sample template HTML)
         /imgs
         /css
             - main.scss (the main interactive's SASS CSS styles)
@@ -130,11 +129,8 @@ First you'll need to specify where the files are to be uploaded, this
 is done in the `cfg/s3.json` file. This path should have been specified
 during the project setup but it can be changed at any time.
 
-In the `cfg/s3.json` change the path where the interactive should be
-deployed too.
+You will also need AWS credentials either in `~/.aws/credentials` [more information on AWS site](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files), or your ENV variables.
 
-
-You will also need AWS credentials either in `cfg/aws.json` or your ENV variables.
 Add the following to your `~/.bashrc` or `~/.bash_profile`:
 
 ```bash
@@ -142,13 +138,7 @@ export AWS_ACCESS_KEY_ID=xxxxxxxx
 export AWS_SECRET_ACCESS_KEY=xxxxxx
 ```
 
-Next you'll want to simulate the upload to ensure it's going to do what
-you think it will.
-```bash
-> grunt deploy
-```
-
-Once you're happy everything looks good, deploy for real.
+Now you're ready to deploy for real.
 ```bash
 > grunt deploy
 ```
